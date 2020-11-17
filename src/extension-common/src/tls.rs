@@ -14,7 +14,7 @@ pub struct TlsClientOpt {
     #[structopt(long)]
     pub tls: bool,
 
-    /// TLS: use client cert
+    /// TLS - use client cert
     #[structopt(long)]
     pub enable_client_cert: bool,
 

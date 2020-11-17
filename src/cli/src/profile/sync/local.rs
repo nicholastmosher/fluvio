@@ -8,7 +8,7 @@ use crate::common::tls::TlsClientOpt;
 
 #[derive(Debug, Default, StructOpt)]
 pub struct LocalOpt {
-    #[structopt(value_name = "host:port", default_value = "localhost:9003")]
+    #[structopt(value_name = "host - port", default_value = "localhost - 9003")]
     pub local: String,
 
     #[structopt(flatten)]

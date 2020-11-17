@@ -156,24 +156,24 @@ pub struct TlsConfig {
     #[structopt(long)]
     tls: bool,
 
-    /// TLS: path to server certificate
+    /// TLS - path to server certificate
     #[structopt(long)]
     pub server_cert: Option<String>,
 
     #[structopt(long)]
-    /// TLS: path to server private key
+    /// TLS - path to server private key
     pub server_key: Option<String>,
 
-    /// TLS: enable client cert
+    /// TLS - enable client cert
     #[structopt(long)]
     pub enable_client_cert: bool,
 
-    /// TLS: path to ca cert, required when client cert is enabled
+    /// TLS - path to ca cert, required when client cert is enabled
     #[structopt(long)]
     pub ca_cert: Option<String>,
 
     #[structopt(long)]
-    /// TLS: address of non tls public service, required
+    /// TLS - address of non tls public service, required
     bind_non_tls_public: Option<String>,
 }
 

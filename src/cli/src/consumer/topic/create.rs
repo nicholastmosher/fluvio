@@ -62,7 +62,7 @@ pub struct CreateTopicOpt {
     #[structopt(
         short = "i",
         long = "ignore-rack-assignment",
-        conflicts_with = "replica_assignment"
+        conflicts_with = "replica-assignment"
     )]
     ignore_rack_assigment: bool,
 

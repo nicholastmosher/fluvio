@@ -26,16 +26,16 @@ pub struct SpuOpt {
     #[structopt(short = "i", long = "id", value_name = "integer")]
     pub id: Option<i32>,
 
-    #[structopt(short = "p", long = "public-server", value_name = "host:port")]
+    #[structopt(short = "p", long = "public-server", value_name = "host - port")]
     /// Spu server for external communication
     pub bind_public: Option<String>,
 
-    #[structopt(short = "v", long = "private-server", value_name = "host:port")]
+    #[structopt(short = "v", long = "private-server", value_name = "host - port")]
     /// Spu server for internal cluster communication
     pub bind_private: Option<String>,
 
     /// Address of the SC Server
-    #[structopt(long, value_name = "host:port", env = "FLV_SC_PRIVATE_HOST")]
+    #[structopt(long, value_name = "host - port", env = "FLV_SC_PRIVATE_HOST")]
     pub sc_addr: Option<String>,
 
     #[structopt(long, value_name = "dir", env = "FLV_LOG_BASE_DIR")]
@@ -240,20 +240,20 @@ struct TlsConfig {
     #[structopt(long)]
     pub tls: bool,
 
-    /// TLS: path to server certificate
+    /// TLS - path to server certificate
     #[structopt(long)]
     pub server_cert: Option<String>,
     #[structopt(long)]
-    /// TLS: path to server private key
+    /// TLS - path to server private key
     pub server_key: Option<String>,
-    /// TLS: enable client cert
+    /// TLS - enable client cert
     #[structopt(long)]
     pub enable_client_cert: bool,
-    /// TLS: path to ca cert, required when client cert is enabled
+    /// TLS - path to ca cert, required when client cert is enabled
     #[structopt(long)]
     pub ca_cert: Option<String>,
 
     #[structopt(long)]
-    /// TLS: address of non tls public service, required
+    /// TLS - address of non tls public service, required
     pub bind_non_tls_public: Option<String>,
 }

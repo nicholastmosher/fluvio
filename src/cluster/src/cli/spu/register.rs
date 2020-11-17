@@ -26,12 +26,12 @@ pub struct RegisterCustomSpuOpt {
     #[structopt(short = "r", long = "rack", value_name = "string")]
     rack: Option<String>,
 
-    /// Public server::port
-    #[structopt(short = "p", long = "public-server", value_name = "host:port")]
+    /// Public server - port
+    #[structopt(short = "p", long = "public-server", value_name = "host - port")]
     public_server: String,
 
-    /// Private server::port
-    #[structopt(short = "v", long = "private-server", value_name = "host:port")]
+    /// Private server - port
+    #[structopt(short = "v", long = "private-server", value_name = "host - port")]
     private_server: String,
 }
 

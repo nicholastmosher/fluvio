@@ -51,7 +51,7 @@ pub struct ConsumeOpt {
     #[structopt(short, long)]
     pub key_value: bool,
 
-    /// Offsets can be positive or negative. (Syntax for negative offset: --offset="-1")
+    /// Offsets can be positive or negative. (Syntax for negative offset is --offset="-1")
     #[structopt(short, long, value_name = "integer")]
     pub offset: Option<i64>,
 

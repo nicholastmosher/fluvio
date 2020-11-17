@@ -46,19 +46,19 @@ impl FromStr for DefaultLogDirectory {
 
 #[derive(Debug, StructOpt)]
 pub struct K8Install {
-    /// k8: use specific chart version
+    /// k8 - use specific chart version
     #[structopt(long)]
     pub chart_version: Option<semver::Version>,
 
-    /// k8: use specific image version
+    /// k8 - use specific image version
     #[structopt(long)]
     pub image_version: Option<String>,
 
-    /// k8: use custom docker registry
+    /// k8 - use custom docker registry
     #[structopt(long)]
     pub registry: Option<String>,
 
-    /// k8
+    /// k8 - use specific namespace
     #[structopt(long, default_value = "default")]
     pub namespace: String,
 

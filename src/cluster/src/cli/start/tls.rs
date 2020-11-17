@@ -14,27 +14,27 @@ pub struct TlsOpt {
     #[structopt(long)]
     pub tls: bool,
 
-    /// TLS: domain
+    /// TLS - domain
     #[structopt(long)]
     pub domain: Option<String>,
 
-    /// TLS: ca cert
+    /// TLS - ca cert
     #[structopt(long, parse(from_os_str))]
     pub ca_cert: Option<PathBuf>,
 
-    /// TLS: client cert
+    /// TLS - client cert
     #[structopt(long, parse(from_os_str))]
     pub client_cert: Option<PathBuf>,
 
-    /// TLS: client key
+    /// TLS - client key
     #[structopt(long, parse(from_os_str))]
     pub client_key: Option<PathBuf>,
 
-    /// TLS: path to server certificate
+    /// TLS - path to server certificate
     #[structopt(long, parse(from_os_str))]
     pub server_cert: Option<PathBuf>,
 
-    /// TLS: path to server private key
+    /// TLS - path to server private key
     #[structopt(long, parse(from_os_str))]
     pub server_key: Option<PathBuf>,
 }

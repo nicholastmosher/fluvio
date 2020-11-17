@@ -214,9 +214,9 @@ enum CompletionCmd {
     #[structopt(name = "bash")]
     Bash(CompletionOpt),
     // Zsh generation currently has a bug that causes panic
-    // /// Generate CLI completions for zsh
-    // #[structopt(name = "zsh")]
-    // Zsh(CompletionOpt),
+    /// Generate CLI completions for zsh
+    #[structopt(name = "zsh")]
+    Zsh(CompletionOpt),
     /// Generate CLI completions for fish
     #[structopt(name = "fish")]
     Fish(CompletionOpt),
@@ -229,9 +229,9 @@ impl CompletionCmd {
             Self::Bash(opt) => {
                 app.gen_completions_to(opt.name, Shell::Bash, &mut std::io::stdout());
             }
-            // Self::Zsh(opt) => {
-            //     app.gen_completions_to(opt.name, Shell::Zsh, &mut std::io::stdout());
-            // }
+            Self::Zsh(opt) => {
+                app.gen_completions_to(opt.name, Shell::Zsh, &mut std::io::stdout());
+            }
             Self::Fish(opt) => {
                 app.gen_completions_to(opt.name, Shell::Fish, &mut std::io::stdout());
             }
