@@ -115,10 +115,10 @@ enum RootCmd {
 
     /// Generate command-line completions for Fluvio
     #[structopt(
-        name = "completions",
+        name = "completion",
         settings = &[AppSettings::Hidden]
     )]
-    Completions(CompletionCmd),
+    Completion(CompletionCmd),
 
     /// Generate metadata for Fluvio base CLI
     #[structopt(
@@ -155,7 +155,7 @@ impl RootCmd {
             Self::Version(version) => {
                 version.process(root.target).await?;
             }
-            Self::Completions(completion) => {
+            Self::Completion(completion) => {
                 completion.process()?;
             }
             Self::Metadata(metadata) => {
