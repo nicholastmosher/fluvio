@@ -11,7 +11,8 @@ use fluvio_system_util::bin::get_fluvio;
 use fluvio::{Fluvio, Offset, PartitionConsumer};
 use fluvio_command::CommandExt;
 
-use crate::cli::TestOption;
+//use crate::cli::TestOption;
+use fluvio_test_options::TestOption;
 use super::message::*;
 
 type Offsets = HashMap<String, i64>;

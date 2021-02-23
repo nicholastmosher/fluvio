@@ -3,6 +3,7 @@ name = "flv-test"
 version = "1.0.1"
 authors = ["fluvio.io"]
 edition = "2018"
+autotests = false
 
 [dependencies]
 log = "0.4.8"
@@ -21,3 +22,12 @@ fluvio-cluster = { path = "../../src/cluster" }
 fluvio-controlplane-metadata = { features = ["k8"], path = "../../src/controlplane-metadata" }
 dataplane = { version = "0.3.0", path = "../../src/dataplane-protocol", package = "fluvio-dataplane-protocol" }
 fluvio-system-util = { version = "0.1.0", path = "../../src/utils" }
+
+# Fluvio test framework Attribute macro
+fluvio-test-macro = { path = "./src/fluvio-test-macro" }
+fluvio-test-options = { path = "./src/fluvio-test-options" }
+
+
+#[[test]]
+#name = "integration_test"
+#path = "src/lib.rs"

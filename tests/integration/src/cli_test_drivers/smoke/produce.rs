@@ -135,7 +135,8 @@ mod cli {
 
     use std::io::Write;
     use std::process::Stdio;
-    use crate::cli::TestOption;
+    //use crate::cli::TestOption;
+    use fluvio_test_options::TestOption;
     use fluvio_system_util::bin::get_fluvio;
 
     pub async fn produce_message_with_cli(option: &TestOption, offsets: Offsets) {

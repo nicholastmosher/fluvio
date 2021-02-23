@@ -1,19 +1,20 @@
-mod setup;
-mod cli;
-mod tests;
-mod environment;
-mod tls;
-mod test_runner;
+//mod setup;
+//mod cli;
+//mod tests;
+//mod environment;
+//mod tls;
+//mod test_runner;
+//
+//pub use cli::*;
+//pub use tls::*;
 
-pub use cli::*;
-pub use tls::*;
-
-const VERSION: &str = include_str!("../../../VERSION");
+//const VERSION: &str = include_str!("../../../VERSION");
 
 fn main() {
     use fluvio_future::task::run_block_on;
-    use setup::Setup;
-    use test_runner::TestRunner;
+    use flv_test::cli_test_drivers::setup::Setup;
+    use flv_test::cli_test_drivers::test_runner::TestRunner;
+    use fluvio_test_options::TestOption;
 
     println!("Start running fluvio test runner");
     fluvio_future::subscriber::init_logger();

@@ -1,3 +1,8 @@
+pub mod setup;
+pub mod test_runner;
+pub mod environment;
+pub mod tls;
+
 mod smoke;
 mod stress;
 
@@ -19,7 +24,7 @@ mod common {
 mod driver {
 
     use crate::TestOption;
-    use crate::tests::smoke::SmokeTestRunner;
+    use crate::cli_test_drivers::smoke::SmokeTestRunner;
 
     use super::TestDriver;
 

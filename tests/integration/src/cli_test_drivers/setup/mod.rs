@@ -2,8 +2,9 @@ use std::time::Duration;
 
 use fluvio_future::timer::sleep;
 
-use crate::cli::TestOption;
-use crate::environment::EnvironmentDriver;
+//use crate::cli::TestOption;
+use fluvio_test_options::TestOption;
+use super::environment::EnvironmentDriver;
 
 pub struct Setup {
     option: TestOption,
@@ -12,7 +13,7 @@ pub struct Setup {
 
 impl Setup {
     pub fn new(option: TestOption) -> Self {
-        use crate::environment::create_driver;
+        use super::environment::create_driver;
 
         let env_driver = create_driver(option.clone());
 

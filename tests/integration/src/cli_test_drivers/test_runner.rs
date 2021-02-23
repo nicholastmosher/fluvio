@@ -3,7 +3,8 @@ use fluvio_future::timer::sleep;
 
 use fluvio_system_util::bin::get_fluvio;
 
-use crate::cli::TestOption;
+//use crate::cli::TestOption;
+use fluvio_test_options::TestOption;
 use fluvio_command::CommandExt;
 
 /// run test
@@ -44,7 +45,7 @@ impl TestRunner {
     #[allow(unused)]
     pub async fn run_test(&self) {
         use std::env;
-        use crate::tests::create_test_driver;
+        use crate::cli_test_drivers::create_test_driver;
 
         // at this point, cluster is up, we need to ensure clean shutdown of cluster
         // no matter if produce or consumer test crashes
