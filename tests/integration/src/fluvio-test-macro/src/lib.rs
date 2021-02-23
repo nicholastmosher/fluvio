@@ -1,5 +1,6 @@
 use proc_macro::TokenStream;
 use proc_macro2::Span;
+use fluvio_test_options::TestOption;
 
 //use syn::{AttributeArgs, ItemFn, NestedMeta, parse_macro_input, Ident};
 use syn::{AttributeArgs, ItemFn, parse_macro_input, Ident};
@@ -12,7 +13,7 @@ pub fn fluvio_test(args: TokenStream, input: TokenStream) -> TokenStream {
     println!("input: \"{}\"", input.to_string());
 
     // Read the test input
-    let _macro_args = parse_macro_input!(args as AttributeArgs);
+    let _macro_args : TestOption = parse_macro_input!(args as AttributeArgs).into();
 
     // Validate inputs by creating TestOption
     //let test_details = validate_test_details(macro_args);
@@ -56,22 +57,7 @@ pub fn fluvio_test(args: TokenStream, input: TokenStream) -> TokenStream {
             use std::time::Duration;
             //use fluvio_test_framework::TestDetails;
 
-
-            let namespace: String = #namespace.to_string(); // May be UUID or pseudo-random unique english name
-            let cluster_config: ClusterConfig = fluvio_cluster::ClusterConfig::builder("0.7.0-alpha.5")
-                .namespace(&namespace)
-                // .add_any_other_configurations()
-                .build()
-                .unwrap();
-            let installer = ClusterInstaller::from_config(cluster_config).unwrap();
-
-            run_block_on(async move {
-
-                let status = installer.install_fluvio().await.expect("");
-                let fluvio_config = FluvioConfig::new(status.address());
-                let fluvio = Fluvio::connect_with_config(&fluvio_config).await.unwrap();
-
-            });
+            use fluvio_test_options::TestOption;
 
 
             // TODO: We want the option to skip clean up if the test fails
@@ -80,12 +66,30 @@ pub fn fluvio_test(args: TokenStream, input: TokenStream) -> TokenStream {
             }));    
 
 
+            run_block_on(async move {
+
+                let namespace: String = #namespace.to_string(); // May be UUID or pseudo-random unique english name
+                let cluster_config: ClusterConfig = fluvio_cluster::ClusterConfig::builder("0.7.0-alpha.5")
+                    .namespace(&namespace)
+                    // .add_any_other_configurations()
+                    .build()
+                    .unwrap();
+                let installer = ClusterInstaller::from_config(cluster_config).unwrap();
+
+                let status = installer.install_fluvio().await.expect("");
+                let fluvio_config = FluvioConfig::new(status.address());
+                //let fluvio = Fluvio::connect_with_config(&fluvio_config).await.unwrap();
+
+
+
             // Write the user's test content
             // (concern: Will rust-analyzer complain about vars that don't exist before compile?
             //  Bc we are going to need to "magic" a fluvio client struct and a test option struct
             //  for test writers to use)
 
-            #test_body
+                #test_body
+
+            });
 
             // Clean up (let this be configurable)
             run_block_on(async move {
