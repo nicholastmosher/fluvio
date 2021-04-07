@@ -88,10 +88,13 @@ jobs:
         rust: [stable]
     env:
       RUST_BACKTRACE: full
-      RUSTC_WRAPPER: sccache
-      SCCACHE_CACHE_SIZE: 300M
-      SCCACHE_DIR: /home/runner/.cache/sccache
-      SCCACHE_IDLE_TIMEOUT: 0
+      SCCACHE_CACHE_SIZE: 10G
+      SCCACHE_BUCKET: fluvio-sccache-2
+      SCCACHE_S3_USE_SSL: true
+      SCCACHE_IDLE_TIMEOUT: 60
+      AWS_ACCESS_KEY_ID: ${{ secrets.SCCACHE_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SCCACHE_AWS_SECRET_ACCESS_KEY }}
+      # SCCACHE_RECACHE: 1 # Uncomment this to clear cache, then comment it back out
     steps:
       - uses: actions/checkout@v2
       - name: Install sccache
@@ -104,6 +107,7 @@ jobs:
           curl -L "$LINK/$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz" | tar xz
           mv -f $SCCACHE_FILE/sccache $HOME/.local/bin/sccache
           echo "$HOME/.local/bin" >> $GITHUB_PATH
+          echo "RUSTC_WRAPPER=$HOME/.local/bin/sccache" >> $GITHUB_ENV
       - name: Install ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
@@ -113,27 +117,19 @@ jobs:
         uses: actions/cache@v2
         continue-on-error: true
         with:
-          path: ~/.cargo/registry/cache
-          key: ${{ runner.os }}-${{ matrix.conf }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-${{ matrix.conf }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.conf }}-cargo-registry-
-      - name: Cache sccache output
-        uses: actions/cache@v2
-        continue-on-error: true
-        with:
-          path: /home/runner/.cache/sccache
-          key: ${{ runner.os }}-${{ matrix.conf }}-sccache-${{ hashFiles('**/Cargo.*') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.conf }}-sccache-
+            ${{ runner.os }}-${{ matrix.conf }}-cargo-
       - name: Start sccache server
         run: sccache --start-server
       - name: Build Tests
         run: make build-all-test
+      - name: Stop sccache server
+        run: sccache --stop-server
       - name: Run unit tests
         timeout-minutes: 5
         run: make run-all-unit-test
-      - name: Stop sccache server
-        run: sccache --stop-server
 
   doc_test:
     name: Doc Test
@@ -146,17 +142,17 @@ jobs:
         include:
           - os: ubuntu-latest
             sccache-path: /home/runner/.cache/sccache
-            sccache-key-part: ubuntu-latest--sccache
-            cargo-registry-cache-key-part: ubuntu-latest--cargo-registry
           - os: macos-latest
             sccache-path: /Users/runner/Library/Caches/Mozilla.sccache
-            sccache-key-part: test-macos-latest--sccache
-            cargo-registry-cache-key-part: test-macos-latest--cargo-registry
     env:
       RUST_BACKTRACE: full
-      RUSTC_WRAPPER: sccache
-      SCCACHE_CACHE_SIZE: 300M
-      SCCACHE_IDLE_TIMEOUT: 0
+      SCCACHE_CACHE_SIZE: 10G
+      SCCACHE_BUCKET: fluvio-sccache-2
+      SCCACHE_S3_USE_SSL: true
+      SCCACHE_IDLE_TIMEOUT: 60
+      AWS_ACCESS_KEY_ID: ${{ secrets.SCCACHE_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SCCACHE_AWS_SECRET_ACCESS_KEY }}
+      # SCCACHE_RECACHE: 1 # Uncomment this to clear cache, then comment it back out
     steps:
       - uses: actions/checkout@v2
       - name: Install sccache - ubuntu-latest
@@ -182,16 +178,16 @@ jobs:
         uses: actions/cache@v2
         continue-on-error: true
         with:
-          path: ~/.cargo/registry/cache
-          key: ${{ matrix.cargo-registry-cache-key-part }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ matrix.cargo-registry-cache-key-part }}-
-      - name: Cache sccache output
-        uses: actions/cache@v2
-        continue-on-error: true
-        with:
-          path: ${{ matrix.sccache-path }}
-          key: ${{ matrix.sccache-key-part }}-${{ hashFiles('**/Cargo.*') }}
-          restore-keys: ${{ matrix.sccache-key-part }}-
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+#      - name: Cache sccache output
+#        uses: actions/cache@v2
+#        continue-on-error: true
+#        with:
+#          path: ${{ matrix.sccache-path }}
+#          key: ${{ matrix.sccache-key-part }}-${{ hashFiles('**/Cargo.*') }}
+#          restore-keys: ${{ matrix.sccache-key-part }}-
       - name: Start sccache server
         run: sccache --start-server
       - name: Run doc tests
@@ -209,8 +205,12 @@ jobs:
     env:
       RUST_BACKTRACE: full
       RUSTC_WRAPPER: sccache
-      SCCACHE_CACHE_SIZE: 300M
-      SCCACHE_DIR: /Users/runner/Library/Caches/Mozilla.sccache
+      SCCACHE_CACHE_SIZE: 10G
+      SCCACHE_BUCKET: fluvio-sccache-2
+      SCCACHE_S3_USE_SSL: true
+      SCCACHE_IDLE_TIMEOUT: 60
+      AWS_ACCESS_KEY_ID: ${{ secrets.SCCACHE_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SCCACHE_AWS_SECRET_ACCESS_KEY }}
 
     steps:
       - uses: actions/checkout@v2
@@ -225,18 +225,10 @@ jobs:
         uses: actions/cache@v2
         continue-on-error: true
         with:
-          path: ~/.cargo/registry/cache
-          key: test-${{ runner.os }}-${{ matrix.conf }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          path: ~/.cargo/registry
+          key: test-${{ runner.os }}-${{ matrix.conf }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            test-${{ runner.os }}-${{ matrix.conf }}-cargo-registry-
-      - name: Cache sccache output
-        uses: actions/cache@v2
-        continue-on-error: true
-        with:
-          path: /Users/runner/Library/Caches/Mozilla.sccache
-          key: test-${{ runner.os }}-${{ matrix.conf }}-sccache-${{ hashFiles('**/Cargo.*') }}
-          restore-keys: |
-            test-${{ runner.os }}-${{ matrix.conf }}-sccache-
+            test-${{ runner.os }}-${{ matrix.conf }}-cargo-
       - name: Start sccache server
         run: sccache --start-server
       - name: Build Tests
@@ -259,8 +251,11 @@ jobs:
     env:
       RUST_BACKTRACE: full
       RUSTC_WRAPPER: sccache
-      SCCACHE_CACHE_SIZE: 300M
-      SCCACHE_DIR: /Users/runner/Library/Caches/Mozilla.sccache
+      SCCACHE_CACHE_SIZE: 10G
+      SCCACHE_BUCKET: fluvio-sccache-2
+      SCCACHE_S3_USE_SSL: true
+      AWS_ACCESS_KEY_ID: ${{ secrets.SCCACHE_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.SCCACHE_AWS_SECRET_ACCESS_KEY }}
       FLUVIO_CMD: true
       FLV_SOCKET_WAIT: 600
       FLV_TEST_CONSUMER_WAIT: 120000
@@ -282,14 +277,6 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.conf }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-${{ matrix.conf }}-cargo-registry-
-      - name: Cache sccache output
-        uses: actions/cache@v2
-        continue-on-error: true
-        with:
-          path: /Users/runner/Library/Caches/Mozilla.sccache
-          key: ${{ runner.os }}-${{ matrix.conf }}-sccache-${{ hashFiles('**/Cargo.*') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.conf }}-sccache-
       - name: Start sccache server
         run: sccache --start-server
       - name: Build Test

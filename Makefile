@@ -145,7 +145,7 @@ check-clippy:	install-clippy
 	cargo +$(RUSTV) clippy --all --all-targets --all-features --tests -- -D warnings -A clippy::upper_case_acronyms
 
 build-all-test:
-	cargo build --lib --tests --all-features
+	cargo build --lib --tests --all-features --verbose
 
 test_tls_multiplex:
 	cd src/socket; cargo test --no-default-features --features tls test_multiplexing_native_tls
@@ -159,7 +159,7 @@ run-all-unit-test: test_tls_multiplex build_filter_wasm
 	cargo test -p fluvio-storage
 
 run-all-doc-test:
-	cargo test --all-features --doc
+	cargo test --all-features --doc --verbose
 
 install_musl:
 	rustup target add ${TARGET_LINUX}
