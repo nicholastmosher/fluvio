@@ -15,36 +15,6 @@ jobs:
       - uses: styfle/cancel-workflow-action@0.4.1
         with:
           access_token: ${{ secrets.GITHUB_TOKEN }}
-  # check_helm_versions:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #     - name: Install YQ CLI Tools
-  #       run: |
-  #         sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
-  #         sudo add-apt-repository ppa:rmescandon/yq
-  #         sudo apt update
-  #         sudo apt install yq -y
-  #     - name: Cancel Workflow Action
-  #       uses: styfle/cancel-workflow-action@0.4.1
-  #       with:
-  #         access_token: ${{ secrets.GITHUB_TOKEN }}
-  #     - name: check versions
-  #       run: make -s check_version
-
-  #  version_check:
-  #    runs-on: ubuntu-latest
-  #    steps:
-  #      - uses: actions/checkout@v2
-  #        with:
-  #          fetch-depth: 0
-  #      - name: Install cargo-cvm
-  #        uses: actions-rs/install@v0.1
-  #        with:
-  #          crate: cargo-cvm
-  #          version: latest
-  #      - name: Check Versions
-  #        run: cargo cvm -x
 
   check_clippy:
     runs-on: ${{ matrix.os }}
@@ -54,10 +24,11 @@ jobs:
         rust: [stable]
     steps:
       - uses: actions/checkout@v2
-      - name: Install ${{ matrix.rust }}
+      - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
+          profile: minimal
           override: true
       - name: check clippy
         run: make check-clippy RUSTV=${{ matrix.rust }}
@@ -71,21 +42,22 @@ jobs:
         rust: [stable]
     steps:
       - uses: actions/checkout@v2
-      - name: Install ${{ matrix.rust }}
+      - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
+          profile: minimal
           override: true
       - name: check fmt
         run: make check-fmt RUSTV=${{ matrix.rust }}
 
-  unit_test_linux:
-    name: Unit Test Linux
-    runs-on: ${{ matrix.os }}
+  unit_test:
+    name: Unit Test
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest]
         rust: [stable]
+    runs-on: ${{ matrix.os }}
     env:
       RUST_BACKTRACE: full
       SCCACHE_CACHE_SIZE: 10G
@@ -97,7 +69,11 @@ jobs:
       # SCCACHE_RECACHE: 1 # Uncomment this to clear cache, then comment it back out
     steps:
       - uses: actions/checkout@v2
-      - name: Install sccache
+      - name: Install sccache (macos-latest)
+        if: matrix.os == 'macos-latest'
+        run: brew install sccache
+      - name: Install sccache (ubuntu-latest)
+        if: matrix.os == 'ubuntu-latest'
         env:
           LINK: https://github.com/mozilla/sccache/releases/download
           SCCACHE_VERSION: 0.2.13
@@ -108,10 +84,11 @@ jobs:
           mv -f $SCCACHE_FILE/sccache $HOME/.local/bin/sccache
           echo "$HOME/.local/bin" >> $GITHUB_PATH
           echo "RUSTC_WRAPPER=$HOME/.local/bin/sccache" >> $GITHUB_ENV
-      - name: Install ${{ matrix.rust }}
+      - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
+          profile: minimal
           override: true
       - name: Cache cargo registry
         uses: actions/cache@v2
@@ -139,11 +116,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         rust: [stable]
-        include:
-          - os: ubuntu-latest
-            sccache-path: /home/runner/.cache/sccache
-          - os: macos-latest
-            sccache-path: /Users/runner/Library/Caches/Mozilla.sccache
     env:
       RUST_BACKTRACE: full
       SCCACHE_CACHE_SIZE: 10G
@@ -155,7 +127,10 @@ jobs:
       # SCCACHE_RECACHE: 1 # Uncomment this to clear cache, then comment it back out
     steps:
       - uses: actions/checkout@v2
-      - name: Install sccache - ubuntu-latest
+      - name: Install sccache (macos-latest)
+        if: matrix.os == 'macos-latest'
+        run: brew install sccache
+      - name: Install sccache (ubuntu-latest)
         if: matrix.os == 'ubuntu-latest'
         env:
           LINK: https://github.com/mozilla/sccache/releases/download
@@ -166,13 +141,11 @@ jobs:
           curl -L "$LINK/$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz" | tar xz
           mv -f $SCCACHE_FILE/sccache $HOME/.local/bin/sccache
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-      - name: Install sccache - macos-latest
-        if: matrix.os == 'macos-latest'
-        run: brew install sccache
-      - name: Install ${{ matrix.rust }}
+      - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
+          profile: minimal
           override: true
       - name: Cache cargo registry
         uses: actions/cache@v2
@@ -181,13 +154,6 @@ jobs:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
-#      - name: Cache sccache output
-#        uses: actions/cache@v2
-#        continue-on-error: true
-#        with:
-#          path: ${{ matrix.sccache-path }}
-#          key: ${{ matrix.sccache-key-part }}-${{ hashFiles('**/Cargo.*') }}
-#          restore-keys: ${{ matrix.sccache-key-part }}-
       - name: Start sccache server
         run: sccache --start-server
       - name: Run doc tests
@@ -195,49 +161,50 @@ jobs:
       - name: Stop sccache server
         run: sccache --stop-server
 
-  unit_test_mac:
-    name: Unit Test Mac
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest]
-        rust: [stable]
-    env:
-      RUST_BACKTRACE: full
-      RUSTC_WRAPPER: sccache
-      SCCACHE_CACHE_SIZE: 10G
-      SCCACHE_BUCKET: fluvio-sccache-2
-      SCCACHE_S3_USE_SSL: true
-      SCCACHE_IDLE_TIMEOUT: 60
-      AWS_ACCESS_KEY_ID: ${{ secrets.SCCACHE_AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.SCCACHE_AWS_SECRET_ACCESS_KEY }}
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install sccache
-        run: brew install sccache
-      - name: Install ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
-          override: true
-      - name: Cache cargo registry
-        uses: actions/cache@v2
-        continue-on-error: true
-        with:
-          path: ~/.cargo/registry
-          key: test-${{ runner.os }}-${{ matrix.conf }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            test-${{ runner.os }}-${{ matrix.conf }}-cargo-
-      - name: Start sccache server
-        run: sccache --start-server
-      - name: Build Tests
-        run: make build-all-test
-      - name: Run unit tests
-        timeout-minutes: 5
-        run: make run-all-unit-test
-      - name: Stop sccache server
-        run: sccache --stop-server
+#  unit_test_mac:
+#    name: Unit Test Mac
+#    runs-on: ${{ matrix.os }}
+#    strategy:
+#      matrix:
+#        os: [macos-latest]
+#        rust: [stable]
+#    env:
+#      RUST_BACKTRACE: full
+#      RUSTC_WRAPPER: sccache
+#      SCCACHE_CACHE_SIZE: 10G
+#      SCCACHE_BUCKET: fluvio-sccache-2
+#      SCCACHE_S3_USE_SSL: true
+#      SCCACHE_IDLE_TIMEOUT: 60
+#      AWS_ACCESS_KEY_ID: ${{ secrets.SCCACHE_AWS_ACCESS_KEY_ID }}
+#      AWS_SECRET_ACCESS_KEY: ${{ secrets.SCCACHE_AWS_SECRET_ACCESS_KEY }}
+#
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Install sccache
+#        run: brew install sccache
+#      - name: Install Rust ${{ matrix.rust }}
+#        uses: actions-rs/toolchain@v1
+#        with:
+#          toolchain: ${{ matrix.rust }}
+#          profile: minimal
+#          override: true
+#      - name: Cache cargo registry
+#        uses: actions/cache@v2
+#        continue-on-error: true
+#        with:
+#          path: ~/.cargo/registry
+#          key: test-${{ runner.os }}-${{ matrix.conf }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+#          restore-keys: |
+#            test-${{ runner.os }}-${{ matrix.conf }}-cargo-
+#      - name: Start sccache server
+#        run: sccache --start-server
+#      - name: Build Tests
+#        run: make build-all-test
+#      - name: Run unit tests
+#        timeout-minutes: 5
+#        run: make run-all-unit-test
+#      - name: Stop sccache server
+#        run: sccache --stop-server
 
   mac_local_cluster_test:
     name: Local cluster test
@@ -264,10 +231,11 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install sccache
         run: brew install sccache
-      - name: Install ${{ matrix.rust }}
+      - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
+          profile: minimal
           override: true
       - name: Cache cargo registry
         uses: actions/cache@v2
@@ -345,10 +313,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: helm version
-      - name: Install ${{ matrix.rust }}
+      - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
+          profile: minimal
           override: true
       - name: Setup Minikube for Linux
         run: |
@@ -402,10 +371,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: helm version
-      - name: Install ${{ matrix.rust }}
+      - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
+          profile: minimal
           override: true
       - name: Setup Minikube for Linux
         if: startsWith(matrix.os, 'infinyon-ubuntu')
