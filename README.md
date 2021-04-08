@@ -32,6 +32,7 @@ in Rust, built to make it easy to develop real-time applications.
 - [Getting Started with Fluvio](https://www.fluvio.io/docs/getting-started/)
 - [Rust API docs](https://docs.rs/fluvio)
 - [Node API docs](https://infinyon.github.io/fluvio-client-node/)
+- [Python API docs](https://infinyon.github.io/fluvio-client-python/fluvio.html)
 - [Fluvio CLI docs](https://www.fluvio.io/docs/cli-reference/)
 - [Fluvio Architecture](https://www.fluvio.io/docs/architecture/)
 
