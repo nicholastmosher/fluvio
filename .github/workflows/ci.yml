@@ -60,6 +60,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       RUST_BACKTRACE: full
+      RUSTC_WRAPPER: sccache
       SCCACHE_CACHE_SIZE: 10G
       SCCACHE_BUCKET: fluvio-sccache-2
       SCCACHE_S3_USE_SSL: true
@@ -83,7 +84,6 @@ jobs:
           curl -L "$LINK/$SCCACHE_VERSION/$SCCACHE_FILE.tar.gz" | tar xz
           mv -f $SCCACHE_FILE/sccache $HOME/.local/bin/sccache
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-          echo "RUSTC_WRAPPER=$HOME/.local/bin/sccache" >> $GITHUB_ENV
       - name: Install Rust ${{ matrix.rust }}
         uses: actions-rs/toolchain@v1
         with:
@@ -119,6 +119,7 @@ jobs:
         rust: [stable]
     env:
       RUST_BACKTRACE: full
+      RUSTC_WRAPPER: sccache
       SCCACHE_CACHE_SIZE: 10G
       SCCACHE_BUCKET: fluvio-sccache-2
       SCCACHE_S3_USE_SSL: true
