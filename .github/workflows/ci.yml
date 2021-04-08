@@ -348,6 +348,7 @@ jobs:
 
   local_cluster_test:
     name: Local cluster test
+    if: ${{ false }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -402,6 +403,7 @@ jobs:
 
   k8_cluster_test:
     name: Kubernetes cluster test
+    if: ${{ false }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
