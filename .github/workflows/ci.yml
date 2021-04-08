@@ -161,6 +161,7 @@ jobs:
         run: make run-all-doc-test
       - name: Stop sccache server
         run: sccache --stop-server
+        continue-on-error: true
 
 #  unit_test_mac:
 #    name: Unit Test Mac
@@ -206,6 +207,7 @@ jobs:
 #        run: make run-all-unit-test
 #      - name: Stop sccache server
 #        run: sccache --stop-server
+#        continue-on-error: true
 
   mac_local_cluster_test:
     name: Local cluster test
@@ -286,6 +288,7 @@ jobs:
         run: examples/tests/run.sh --release
       - name: Stop sccache server
         run: sccache --stop-server
+        continue-on-error: true
       - name: Upload Sc logs
         timeout-minutes: 5
         if: failure()
