@@ -1,0 +1,8 @@
+status = [
+    "Check clippy (ubuntu-latest, stable)"
+    "Check rustfmt (ubuntu-latest, stable)"
+    "Unit Test Linux (ubuntu-latest, stable)"
+    "Doc Test (ubuntu-latest, stable)"
+]
+delete_merged_branches = true
+timeout_sec = 1200 # 20 mins

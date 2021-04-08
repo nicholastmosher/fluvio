@@ -47,6 +47,7 @@ jobs:
   #        run: cargo cvm -x
 
   check_clippy:
+    name: Check clippy
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -63,7 +64,7 @@ jobs:
         run: make check-clippy RUSTV=${{ matrix.rust }}
 
   check_fmt:
-    name: check cargo fmt
+    name: Check rustfmt
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
