@@ -53,13 +53,14 @@ jobs:
         run: gh release upload -R nicholastmosher/fluvio --clobber dev ./${{ matrix.artifact }}-${{ matrix.target }}
 
   docker:
-    name: Publish Latest Image
+    name: Publish Docker Image
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
         rust: [stable]
     steps:
+      - uses: actions/checkout@v2
       - name: Login GH CLI
         run: gh auth login --with-token < <(echo ${{ secrets.GITHUB_TOKEN }})
 #      - name: Download artifact
@@ -128,6 +129,7 @@ jobs:
 
       - name: Move artifacts
         run: |
+          mkdir -p target/x86_64-unknown-linux-musl/release/
           mv "fluvio-x86_64-unknown-linux-musl-${{ github.sha }}" target/x86_64-unknown-linux-musl/release/fluvio
           mv "fluvio-run-x86_64-unknown-linux-musl-${{ github.sha }}" target/x86_64-unknown-linux-musl/release/fluvio-run
 
