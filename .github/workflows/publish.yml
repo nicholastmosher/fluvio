@@ -19,36 +19,6 @@ env:
   FORCE_RELEASE: ${{ github.events.inputs.force }}
 
 jobs:
-  # Bump the `dev` tag to this commit in order to overwrite the `dev` GH prerelease
-  bump_github_release:
-    name: Bump dev tag
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Bump dev tag
-        run: |
-          git tag -f dev
-          git push -f origin dev
-
-  # Upload the build artifacts to the `dev` GH release, overwriting old artifacts
-  github_release:
-    name: Publish to GitHub Releases (${{ matrix.artifact }}-${{ matrix.target }})
-    needs: bump_github_release
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        artifact: [fluvio, fluvio-run]
-        target: [x86_64-unknown-linux-musl, x86_64-apple-darwin]
-    steps:
-      - name: Login GH CLI
-        run: gh auth login --with-token < <(echo ${{ secrets.GITHUB_TOKEN }})
-      - name: Download artifact
-        run: gh run download -R infinyon/fluvio -n "${{ matrix.artifact }}-${{ matrix.target }}-${{ github.sha }}"
-      - name: Rename artifact
-        run: mv ${{ matrix.artifact }} ${{ matrix.artifact }}-${{ matrix.target }}
-      - name: Publish artifact
-        run: gh release upload -R infinyon/fluvio --clobber dev ./${{ matrix.artifact }}-${{ matrix.target }}
-
   # Build a docker image using the latest `fluvio-run` build for linux-musl
   docker:
     name: Publish Docker Image
@@ -90,13 +60,11 @@ jobs:
           HELM_VERSION: v3.3.4
           OS: ${{ matrix.os }}
       - name: Install Helm Push plugin
-        run: helm plugin install https://github.com/chartmuseum/helm-push.git
-      - name: Helm Add Repo
-        run: helm repo add chartmuseum https://gitops:${{ secrets.HELM_PASSWORD }}@charts.fluvio.io
-      - name: Push Sys Chart
-        run: helm push k8-util/helm/fluvio-sys --version="$(cat VERSION)-$(git rev-parse HEAD)" chartmuseum
-      - name: Push App Chart
-        run: helm push k8-util/helm/fluvio-app --version="$(cat VERSION)-$(git rev-parse HEAD)" chartmuseum
+        run: |
+          helm plugin install https://github.com/chartmuseum/helm-push.git
+          helm repo add chartmuseum https://gitops:${{ secrets.HELM_PASSWORD }}@charts.fluvio.io
+          helm push k8-util/helm/fluvio-sys --version="$(cat VERSION)-$(git rev-parse HEAD)" chartmuseum
+          helm push k8-util/helm/fluvio-app --version="$(cat VERSION)-$(git rev-parse HEAD)" chartmuseum
 
   # Download the `fluvio` release artifact for each target and publish them to packages.fluvio.io
   fluvio:
@@ -145,7 +113,7 @@ jobs:
   # If the 'latest' tag gets bumped, you can be sure the whole publish flow succeeded.
   bump_fluvio:
     name: Bump Fluvio CLI version
-    needs: [github_release, docker, helm, fluvio]
+    needs: [docker, helm, fluvio]
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
