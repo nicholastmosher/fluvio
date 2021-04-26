@@ -70,12 +70,14 @@ jobs:
         include:
           # Only run Clippy once, on ubuntu-latest
           - os: ubuntu-latest
+            rust: stable
             sccache-path: /home/runner/.cache/sccache
             task:
               - name: Clippy
                 run: make check-clippy
           # Only run Doctests once, on ubuntu-latest
           - os: ubuntu-latest
+            rust: stable
             sccache-path: /home/runner/.cache/sccache
             task:
               - name: Doc tests
