@@ -139,6 +139,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "fluvio-wasm-aggregate-json"
+version = "0.1.0"
+dependencies = [
+ "fluvio-smartstream",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "fluvio-wasm-filter"
 version = "0.1.0"
 dependencies = [
