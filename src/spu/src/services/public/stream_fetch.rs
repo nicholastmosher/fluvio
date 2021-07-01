@@ -347,20 +347,12 @@ impl StreamFetchHandler {
                                 IoError::new(ErrorKind::Other, format!("aggregate err: {}", err))
                             })?;
 
-                        // TODO remove
-                        info!("GOT AGGREGATE BATCH: {:?}", &aggregate_batch.records());
-
                         // Take the last accumulated value from this batch and save it for next batch
-                        let latest_accumulator = aggregate_batch.records().iter().last().clone();
+                        let latest_accumulator = aggregate_batch.records().iter().last();
                         if let Some(latest) = latest_accumulator {
                             debug!(?latest, "Got most recent accumulator:");
                             let acc_data = Vec::from(latest.value.as_ref());
                             *accumulator = acc_data;
-                            // TODO remove
-                            info!(
-                                "Assigning new in-memory accumulator: {:?}",
-                                &self.sm_accumulator
-                            );
                         }
 
                         aggregate_batch
