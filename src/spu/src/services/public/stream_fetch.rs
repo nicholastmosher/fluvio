@@ -1014,4 +1014,107 @@ mod test {
 
         server_end_event.notify();
     }
+
+    fn generate_aggregate_record(record_index: usize, _producer: &BatchProducer) -> Record {
+        let msg = record_index.to_string().repeat(100);
+        Record::new(RecordData::from(msg))
+    }
+
+    fn create_aggregate_records(records: u16) -> RecordSet {
+        BatchProducer::builder()
+            .records(records)
+            .record_generator(Arc::new(generate_aggregate_record))
+            .build()
+            .expect("batch")
+            .records()
+    }
+
+    #[fluvio_future::test(ignore)]
+    async fn test_stream_aggregate_fetch() {
+        let test_path = temp_dir().join("aggregate_stream_fetch");
+        ensure_clean_dir(&test_path);
+
+        let addr = "127.0.0.1:12003";
+        let mut spu_config = SpuConfig::default();
+        spu_config.log.base_dir = test_path;
+        let ctx = GlobalContext::new_shared_context(spu_config);
+
+        let server_end_event = create_public_server(addr.to_owned(), ctx.clone()).run();
+
+        // wait for stream controller async to start
+        sleep(Duration::from_millis(100)).await;
+
+        let client_socket =
+            MultiplexerSocket::new(FluvioSocket::connect(addr).await.expect("connect"));
+
+        // perform for two versions
+
+        let topic = "testaggregate";
+
+        let test = Replica::new((topic.to_owned(), 0), 5001, vec![5001]);
+        let test_id = test.id.clone();
+        let replica = LeaderReplicaState::create(test, ctx.config(), ctx.status_update_owned())
+            .await
+            .expect("replica");
+        ctx.leaders_state().insert(test_id, replica.clone());
+
+        let wasm_module = load_wasm_module("fluvio_wasm_aggregate");
+
+        // Providing an accumulator causes SPU to run aggregator
+        let accumulator = Vec::new();
+
+        let stream_request = DefaultStreamFetchRequest {
+            topic: topic.to_owned(),
+            partition: 0,
+            fetch_offset: 0,
+            isolation: Isolation::ReadUncommitted,
+            max_bytes: 10000,
+            wasm_module,
+            accumulator: Some(accumulator),
+            ..Default::default()
+        };
+
+        // 1 out of 2 are filtered
+        let mut records = create_aggregate_records(10);
+        debug!("records: {:#?}", records);
+        replica
+            .write_record_set(&mut records, ctx.follower_notifier())
+            .await
+            .expect("write");
+
+        let mut stream = client_socket
+            .create_stream(RequestMessage::new_request(stream_request), 11)
+            .await
+            .expect("create stream");
+
+        debug!("first filter fetch");
+        let response = stream.next().await.expect("first").expect("response");
+        let _stream_id = response.stream_id;
+
+        {
+            debug!("received first message");
+            assert_eq!(response.topic, topic);
+
+            let partition = &response.partition;
+            assert_eq!(partition.error_code, ErrorCode::None);
+            assert_eq!(partition.high_watermark, 10);
+            assert_eq!(partition.next_offset_for_fetch(), Some(10)); // shoule be same as HW
+
+            assert_eq!(partition.records.batches.len(), 1);
+            let batch = &partition.records.batches[0];
+            assert_eq!(batch.base_offset, 0);
+            assert_eq!(batch.records().len(), 10);
+
+            let mut accumulator = "0".repeat(100);
+
+            for i in 0..10 {
+                assert_eq!(batch.records()[i].value().as_ref(), accumulator.as_bytes());
+                assert_eq!(batch.records()[i].get_offset_delta(), i as i64);
+
+                accumulator.push_str(&(i + 1).to_string().repeat(100));
+            }
+        }
+
+        server_end_event.notify();
+    }
 }
