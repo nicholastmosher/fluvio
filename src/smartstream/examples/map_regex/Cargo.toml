@@ -10,3 +10,4 @@ crate-type = ['cdylib']
 [dependencies]
 fluvio-smartstream = { path = "../../" }
 regex = "1"
+once_cell = "1"

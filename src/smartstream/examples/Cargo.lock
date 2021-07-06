@@ -196,6 +196,7 @@ name = "fluvio-wasm-map-regex"
 version = "0.1.0"
 dependencies = [
  "fluvio-smartstream",
+ "once_cell",
  "regex",
 ]
 

@@ -1,5 +1,8 @@
 use fluvio_smartstream::{smartstream, Record, RecordData};
 use regex::Regex;
+use once_cell::sync::Lazy;
+
+static SOCIAL_SECURITY_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\d{3}-\d{2}-\d{4}").unwrap());
 
 #[smartstream(map)]
 pub fn map(record: &Record) -> (Option<RecordData>, RecordData) {
@@ -11,8 +14,7 @@ pub fn map(record: &Record) -> (Option<RecordData>, RecordData) {
         Err(_) => return (key, record.value.clone()),
     };
 
-    let social_security_regex = Regex::new(r"\d{3}-\d{2}-\d{4}").unwrap();
-    let output = social_security_regex
+    let output = SOCIAL_SECURITY_RE
         .replace_all(string, "***-**-****")
         .to_string();
 
