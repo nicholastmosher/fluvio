@@ -160,6 +160,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fluvio-wasm-filter-odd"
+version = "0.1.0"
+dependencies = [
+ "fluvio-smartstream",
+]
+
+[[package]]
 name = "fluvio-wasm-map"
 version = "0.1.0"
 dependencies = [
