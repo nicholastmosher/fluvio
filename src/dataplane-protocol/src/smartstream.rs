@@ -1,7 +1,7 @@
-pub use encoding::SmartStreamError;
+pub use encoding::SmartStreamUserError;
 pub use encoding::SmartStreamOutput;
 
-pub type Result<T> = std::result::Result<T, SmartStreamError>;
+pub type Result<T> = std::result::Result<T, SmartStreamUserError>;
 
 mod encoding {
     use crate::record::Record;
@@ -10,17 +10,17 @@ mod encoding {
 
     /// A type used to capture and serialize errors from within a SmartStream
     #[derive(Debug, Default, Encode, Decode)]
-    pub struct SmartStreamError {
+    pub struct SmartStreamUserError {
         rendered: String,
     }
 
-    impl fmt::Display for SmartStreamError {
+    impl fmt::Display for SmartStreamUserError {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             self.rendered.fmt(f)
         }
     }
 
-    impl<E> From<E> for SmartStreamError
+    impl<E> From<E> for SmartStreamUserError
     where
         E: Into<eyre::Error>,
     {
@@ -36,6 +36,6 @@ mod encoding {
     #[derive(Debug, Default, Encode, Decode)]
     pub struct SmartStreamOutput {
         pub successes: Vec<Record>,
-        pub error: Option<SmartStreamError>,
+        pub error: Option<SmartStreamUserError>,
     }
 }

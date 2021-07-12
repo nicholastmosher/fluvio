@@ -76,7 +76,7 @@ where
     pub error_code: ErrorCode,
 
     #[fluvio(min_version = 12)]
-    pub smartstream_error: Option<crate::smartstream::SmartStreamError>,
+    pub smartstream_error: Option<SmartStreamError>,
 
     /// The current high water mark.
     pub high_watermark: i64,
